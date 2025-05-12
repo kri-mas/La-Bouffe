@@ -8,7 +8,7 @@ import multer from "multer";
 import { auth, isAdmin } from "../middleware/auth.js";
 import { foodValidation } from "../validator/foodValidator.js";
 
-const foodRouter = express.Router();
+const router = express.Router();
 
 const storage = multer.diskStorage({
   destination: "uploads",
@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-foodRouter.post(
+router.post(
   "/add",
   auth,
   isAdmin,
@@ -27,7 +27,7 @@ foodRouter.post(
   foodValidation,
   addFood
 );
-foodRouter.get("/list", listFood);
-foodRouter.delete("/remove", auth, isAdmin, removeFood);
+router.get("/list", listFood);
+router.delete("/remove", auth, isAdmin, removeFood);
 
-export default foodRouter;
+export default router;
