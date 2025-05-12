@@ -2,12 +2,13 @@ import userModel from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import validator from "validator";
+import validationResult from "express-validator";
 
 const createToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET);
 };
 
-export const loginUser = async (req, res) => {
+export const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
   try {
     const user = await userModel.findOne({ email });
@@ -21,15 +22,22 @@ export const loginUser = async (req, res) => {
     const role = user.role;
     const token = createToken(user._id);
     res.json({ success: true, token, role });
-  } catch (error) {
-    console.log(error);
-    res.json({ success: false, message: "Error" });
+  } catch (err) {
+    next(err);
   }
 };
 
-export const registerUser = async (req, res) => {
+export const registerUser = async (req, res, next) => {
   const { name, email, password } = req.body;
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array(),
+      });
+    }
+
     const exists = await userModel.findOne({ email });
     if (exists) {
       return res.json({ success: false, message: "User already exists" });
@@ -58,8 +66,7 @@ export const registerUser = async (req, res) => {
     const role = user.role;
     const token = createToken(user._id);
     res.json({ success: true, token, role });
-  } catch (error) {
-    console.log("register error:", error);
-    res.json({ success: false, message: "Error" });
+  } catch (err) {
+    next(err);
   }
 };
